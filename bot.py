@@ -24,13 +24,13 @@ dispatcher.add_handler(CommandHandler("start", start))
 # Iniciar el bot
 if __name__ == "__main__":
     logging.info("Bot iniciado")
+    updater.start_polling()
 
-    # Enviar mensaje de prueba solo al iniciar
+    # Enviar mensaje de prueba después de que polling esté activo
     if TEST_CHAT_ID:
         try:
             updater.bot.send_message(chat_id=TEST_CHAT_ID, text="🎬 El bot está funcionando correctamente. ¡Listo para buscar estrenos!")
         except Exception as e:
             logging.error(f"Error al enviar mensaje de prueba: {e}")
 
-    updater.start_polling()
     updater.idle()
