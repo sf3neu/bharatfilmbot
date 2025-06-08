@@ -19,6 +19,11 @@ app = Flask(__name__)
 bot = Bot(token=TOKEN)
 dispatcher = Dispatcher(bot, None, workers=0)
 
+# Ruta raíz opcional para evitar 404 en "/"
+@app.route("/")
+def index():
+    return "Bot en funcionamiento."
+
 # Handler para /start
 def start(update: Update, context: CallbackContext):
     context.bot.send_message(chat_id=update.effective_chat.id, text="¡Hola! Bot activado correctamente vía webhook. Te avisaré si hay estrenos indios.")
