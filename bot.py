@@ -32,10 +32,11 @@ def webhook():
     dispatcher.process_update(update)
     return "ok"
 
-# Configurar webhook al iniciar
-@app.before_first_request
-def set_webhook():
+# Configurar webhook y arrancar servidor
+if __name__ == "__main__":
     bot.set_webhook(f"{WEBHOOK_URL}/{TOKEN}")
+    app.run(host="0.0.0.0", port=10000)
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=10000)
