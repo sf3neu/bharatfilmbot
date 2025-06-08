@@ -1,27 +1,41 @@
+
 import os
 import logging
-from telegram.ext import CommandHandler, Updater
+from flask import Flask, request
+from telegram import Bot, Update
+from telegram.ext import Dispatcher, CommandHandler, CallbackContext
 
 # Configurar logging
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# Obtener token del entorno
+# Leer variables de entorno
 TOKEN = os.getenv("TELEGRAM_TOKEN")
+WEBHOOK_URL = os.getenv("WEBHOOK_URL")
 
-# Crear instancia del bot
-updater = Updater(token=TOKEN, use_context=True)
-dispatcher = updater.dispatcher
+# Crear Flask app
+app = Flask(__name__)
+
+# Crear bot y dispatcher
+bot = Bot(token=TOKEN)
+dispatcher = Dispatcher(bot, None, workers=0)
 
 # Handler para /start
-def start(update, context):
-    chat_id = update.effective_chat.id
-    context.bot.send_message(chat_id=chat_id, text="¡Hola! Bot activado correctamente. Te avisaré si hay estrenos indios.")
+def start(update: Update, context: CallbackContext):
+    context.bot.send_message(chat_id=update.effective_chat.id, text="¡Hola! Bot activado correctamente vía webhook. Te avisaré si hay estrenos indios.")
 
-# Añadir handler
 dispatcher.add_handler(CommandHandler("start", start))
 
-# Iniciar el bot
+# Ruta para recibir las actualizaciones de Telegram
+@app.route(f"/{TOKEN}", methods=["POST"])
+def webhook():
+    update = Update.de_json(request.get_json(force=True), bot)
+    dispatcher.process_update(update)
+    return "ok"
+
+# Configurar webhook al iniciar
+@app.before_first_request
+def set_webhook():
+    bot.set_webhook(f"{WEBHOOK_URL}/{TOKEN}")
+
 if __name__ == "__main__":
-    logging.info("Bot iniciado")
-    updater.start_polling()
-    updater.idle()
+    app.run(host="0.0.0.0", port=10000)
